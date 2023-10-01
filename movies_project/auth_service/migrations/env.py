@@ -4,8 +4,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from src.core.config import config as api_config
-from src.models.models_db import Base
+from src.core.config import config as service_config
+from src.models.db import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -22,10 +22,19 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
+def include_object(object, name, type_, reflected, compare_to) -> bool:
+    if ((hasattr(object, 'schema') and object.schema == service_config.auth_schema)
+            or (hasattr(object, 'table') and object.table.schema == service_config.auth_schema)):
+        return True
+    else:
+        return False
 
 
 def run_migrations_offline() -> None:
@@ -40,7 +49,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = api_config.postgres_db_dns
+    url = service_config.postgres_db_dns
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -58,6 +67,7 @@ def do_run_migrations(connection):
         dialect_opts={"paramstyle": "named"},
         connection=connection,
         target_metadata=target_metadata,
+        include_object=include_object,  # noqa
         include_schemas=True,
         # literal_binds=True,
         version_table_schema=target_metadata.schema,
@@ -75,7 +85,7 @@ async def run_migrations_online() -> None:
 
     """
 
-    url = api_config.postgres_db_dns
+    url = service_config.postgres_db_dns
     print(f'{url=}')
 
     connectable = create_async_engine(url, future=True)

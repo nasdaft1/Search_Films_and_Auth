@@ -2,7 +2,7 @@ import os
 from typing import Literal
 
 from dotenv import load_dotenv
-from pydantic import conint, BaseModel
+from pydantic import conint, BaseModel, Field
 from pydantic_settings import BaseSettings
 
 load_dotenv()
@@ -23,6 +23,7 @@ class AppConfig(BaseSettings, BaseModel):
     # настройки postgres
     postgres_db_dns: str = 'postgresql+asyncpg://app:123qwe@127.0.0.1:5432/movies_project'
     postgres_echo: bool = True
+    auth_schema: str = 'auth'
 
     log_format: str = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     log_default_handlers: list[str] = ['console', 'file']
@@ -41,6 +42,9 @@ class Crypt(BaseSettings):
     algorithm: str = 'HS256'
     access_token_expire_minutes: int = 30  # минуты
     cookie_max_age: int = 1800  # секунды
+    # Для паролей
+    hashing_method: str = 'PBKDF2'
+    hashing_salt_length: int = 16
 
     class Config:
         env_file = f'{BASE_DIR}/.env'
@@ -48,5 +52,5 @@ class Crypt(BaseSettings):
         extra = 'allow'
 
 
-config_token = Crypt()
+security_config = Crypt()
 config = AppConfig()
