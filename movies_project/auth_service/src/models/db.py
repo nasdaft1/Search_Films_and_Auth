@@ -1,13 +1,12 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, String, DateTime, func, ForeignKey
+from sqlalchemy import Boolean, Column, String, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base, relationship
 
 from src.core.config import config
 
-# Импортируем базовый класс для моделей.
 Base = declarative_base()
 
 

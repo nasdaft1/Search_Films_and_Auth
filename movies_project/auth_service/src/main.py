@@ -37,6 +37,7 @@ app = FastAPI(
 
 
 app.include_router(users.router, prefix='/api/v1/users')
+app.include_router(roles.router, prefix='/api/v1/roles')
 
 add_pagination(app)
 
