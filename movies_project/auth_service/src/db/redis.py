@@ -1,8 +1,12 @@
 from redis.asyncio import Redis
 
-redis: Redis | None = None
+
+con_redis: Redis | None = None
 
 
-# Функция понадобится при внедрении зависимостей
-async def get_redis() -> Redis:
-    return redis
+async def set_value(key, value):
+    await con_redis.set(key, value)
+
+
+async def get_value(key):
+    return await con_redis.get(key)

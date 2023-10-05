@@ -1,28 +1,29 @@
 import logging
 from contextlib import asynccontextmanager
 from logging import config as logging_config
+from typing import Any
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import ORJSONResponse
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_pagination import add_pagination
 from redis import asyncio as aioredis
 
-from api.v1 import users, roles
+from api.v1 import users, roles, auth
 from core import logger
 from core.config import config
-from db import redis
+from services.middleware import middleware
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    redis.redis = aioredis.from_url(f'redis://{config.redis_host}:{config.redis_port}')
-    FastAPICache.init(RedisBackend(redis.redis), prefix="fastapi-cache", expire=config.cache_expire_time)
+    con_redis = aioredis.from_url(f'redis://{config.redis_host}:{config.redis_port}')
+    FastAPICache.init(RedisBackend(con_redis), prefix="fastapi-cache", expire=config.cache_expire_time)
     yield
     # Отключаемся от баз при выключении сервера
-    await redis.redis.close()
+    await con_redis.close()
 
 
 # Применяем настройки логирования
@@ -36,8 +37,16 @@ app = FastAPI(
 )
 
 
+@app.middleware("http")
+async def my_middleware(request: Request,
+                        call_next: Any) -> Any:
+    """обработка запросов на roles, cockles"""
+    return await middleware(request=request, call_next=call_next)
+
+
 app.include_router(users.router, prefix='/api/v1/users')
 app.include_router(roles.router, prefix='/api/v1/roles')
+app.include_router(auth.router, prefix='/api/v1/auth')
 
 add_pagination(app)
 

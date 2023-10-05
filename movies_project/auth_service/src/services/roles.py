@@ -1,4 +1,5 @@
 import uuid
+from functools import lru_cache
 from http import HTTPStatus
 from logging import getLogger
 
@@ -9,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas.base import Page
-from src.db.postgres import get_session
+from db.postgres import get_session
 from src.models.db import Role
 from .base import BaseService
 

@@ -14,7 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from schemas.base import Page
 from schemas.users import UserForCreate, HistoryForCreate, UserForUpdate
 from src.core.config import security_config
-from src.db.postgres import get_session
+from db.postgres import get_session
 from src.models.db import User, Role, History
 from .base import BaseService
 
@@ -128,7 +128,6 @@ class UsersService(BaseService):
         await self.session.commit()
 
 
-@lru_cache()
 def get_users_service(
         session: AsyncSession = Depends(get_session),
 ) -> UsersService:
