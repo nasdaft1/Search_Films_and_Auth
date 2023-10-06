@@ -16,6 +16,7 @@ from schemas.users import (
 )
 from services.roles import RolesService, get_roles_service
 from services.users import UsersService, get_users_service
+from services.auth import access
 
 router = APIRouter()
 
@@ -29,10 +30,10 @@ logger = getLogger('users_api')
     tags=['Пользователи'],
     response_model=UserInDB,
 )
-# @requires_admin
 async def create_role(
         user: UserForCreate,
         users_service: UsersService = Depends(get_users_service),
+        auth=Depends(access(['self'])),
 ) -> UserInDB:
     return await users_service.create_user(user=user)
 
@@ -48,6 +49,7 @@ async def get_user(
         *,
         user_id: uuid.UUID,
         users_service: UsersService = Depends(get_users_service),
+        auth=Depends(access(['self'])),
 ) -> UserInDB:
     result = await users_service.get_by_id(user_id)
     return result
@@ -62,6 +64,7 @@ async def get_user(
 )
 async def get_users(
         users_service: UsersService = Depends(get_users_service),
+        auth=Depends(access(['self'])),
 ) -> Page[UserInDB]:
     return await users_service.get_users()
 
@@ -73,10 +76,11 @@ async def get_users(
     tags=['Пользователи'],
     response_model=str,
 )
-# @requires_admin
+
 async def create_role(
         user: UserForUpdate,
         users_service: UsersService = Depends(get_users_service),
+        auth=Depends(access(['self'])),
 ) -> str:
     return await users_service.update_user(user=user)
 
@@ -92,6 +96,7 @@ async def get_roles(
         *,
         user_id: uuid.UUID,
         users_service: UsersService = Depends(get_users_service),
+        auth=Depends(access(['self'])),
 ) -> list[RoleInDB]:
     return await users_service.get_roles(user_id)
 
@@ -107,6 +112,7 @@ async def get_history(
         *,
         user_id: uuid.UUID,
         users_service: UsersService = Depends(get_users_service),
+        auth=Depends(access(['self'])),
 ) -> list[UserHistory]:
     return await users_service.get_history(user_id)
 
@@ -122,6 +128,7 @@ async def add_history(
         *,
         history: HistoryForCreate,
         users_service: UsersService = Depends(get_users_service),
+        auth=Depends(access(['self'])),
 ) -> HistoryInDB:
     return await users_service.add_history(history)
 
@@ -133,12 +140,12 @@ async def add_history(
     tags=['Пользователи'],
     response_model=str,
 )
-# @requires_admin
 async def add_role(
         user_id: uuid.UUID,
         role_id: uuid.UUID,
         users_service: UsersService = Depends(get_users_service),
         roles_service: RolesService = Depends(get_roles_service),
+        auth=Depends(access(['self'])),
 ) -> str:
     role = await roles_service.get_by_id(role_id=role_id)
     result = await users_service.add_role(user_id=user_id, role=role)
@@ -151,12 +158,12 @@ async def add_role(
     summary='Удаление роли у пользователя',
     tags=['Пользователи'],
 )
-# @requires_admin
 async def remove_role(
         user_id: uuid.UUID,
         role_id: uuid.UUID,
         users_service: UsersService = Depends(get_users_service),
         roles_service: RolesService = Depends(get_roles_service),
+        auth=Depends(access(['self'])),
 ) -> None:
     role = await roles_service.get_by_id(role_id=role_id)
     await users_service.remove_role(user_id=user_id, role=role)

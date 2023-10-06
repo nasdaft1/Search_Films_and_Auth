@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
 from schemas.auth import UserPassAUTH
-from services.auth import Auth, get_auth_service
+from services.authorizations import Auth, get_auth_service
 
 router = APIRouter()
 

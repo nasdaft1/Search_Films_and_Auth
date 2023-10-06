@@ -1,49 +1,61 @@
 import logging
-from functools import lru_cache
-from logging import getLogger
-
-import sqlalchemy as sql
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from werkzeug.security import generate_password_hash
-
+from typing import Any
 from core.config import security_config
-from db.postgres import get_session
-from models.db import User, Role
-from .base import BaseService
+from services.token import read_token
 
-# from db.models import Access
-logger = getLogger('users_service')
+from fastapi import HTTPException, Request
+from db.redis import con_redis
 
 
-class Auth(BaseService):
+async def check_token(request: Request, cookies_name: list[str], token_type: bool):
+    """
+    Обработка токенов и cookies
+    :param request:
+    :param cookies_name:
+    :param token_type: True - сессии False - refresh
+    :return:
+    """
+    error_status = 200
+    try:
+        token = request.cookies.get(cookies_name)
+        result = read_token(token)
+    except HTTPException as error:
+        error_status = error.status_code
+        if error_status != 401 and token_type:
+            raise HTTPException(status_code=403, detail="В доступе отказано авторизуйтесь")
+    # Проверяем access token что не в black_list
+    black_list = con_redis.get(token)
+    match black_list, token_type, error_status:
+        case True, _, _:
+            # В доступе отказано
+            # return RedirectResponse(url="/new-url")
+            raise HTTPException(status_code=403, detail="В доступе отказано авторизуйтесь")
+        case None, True, 401:
+            # access не в black_list
+            check_token(request, cookies_name, )
 
-    async def access_user(self, username: str, password: str):
-        """
-        Проверка есть зарегистрированные user
-        если нет его регистрация в DB
-        :param username: логин
-        :param password: пароль
-        :return: код UUID пользователя | None нет доступа
-        """
-        password_hash = generate_password_hash(
-            password, method=security_config.hashing_method.lower(),
-            salt_length=security_config.hashing_salt_length),
+        case None, True, 200:
+            # access не в black_list
+            pass
+        case None, False, _:
+            # refresh не в black_list пересоздать токен
+            pass
 
-        statement = (sql.select(User.id, Role.id, Role.name).
-                     where(sql.and_(User.username == username,
-                                    User.password_hash == password_hash)).limit(1))
-        result = (await (self.session.execute(statement))).one_or_none()
-
-        if result is None:
-            logging.debug(f'user={username} доступ закрыт')
-            return None
-        logging.debug(f'user={username} Authorization: Bearer <{result[0]}>')
-        #return result[0]
+        # error.status_code
+        # return RedirectResponse(url="/new-url")
 
 
-@lru_cache()
-def get_auth_service(
-        session: AsyncSession = Depends(get_session),
-) -> Auth:
-    return Auth(session=session)
+def access(role=list[str]):
+    async def token(request: Request):
+        logging.debug('11111111111111111111111')
+        logging.debug(role)
+        logging.debug(request.url)
+        pass
+
+    return token
+
+
+# response.set_cookie(key=config_token.token_name,
+#                         value=token,
+#                         httponly=True,  # защищает cookie от JavaScript
+#                         max_age=config_token.cookie_max_age)

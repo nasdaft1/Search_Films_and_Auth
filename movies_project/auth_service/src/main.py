@@ -14,7 +14,6 @@ from redis import asyncio as aioredis
 from api.v1 import users, roles, auth
 from core import logger
 from core.config import config
-from services.middleware import middleware
 
 
 @asynccontextmanager
@@ -35,14 +34,6 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
 )
-
-
-@app.middleware("http")
-async def my_middleware(request: Request,
-                        call_next: Any) -> Any:
-    """обработка запросов на roles, cockles"""
-    return await middleware(request=request, call_next=call_next)
-
 
 app.include_router(users.router, prefix='/api/v1/users')
 app.include_router(roles.router, prefix='/api/v1/roles')

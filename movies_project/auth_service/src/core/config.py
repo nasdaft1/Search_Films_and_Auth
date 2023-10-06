@@ -30,18 +30,17 @@ class AppConfig(BaseSettings, BaseModel):
     log_level: Literal['DEBUG', 'ERROR', 'WARNING', 'CRITICAL', 'INFO', 'FATAL'] = 'DEBUG'
     log_file: str = 'test.log'
 
-
     class Config:
         env_file = f'{BASE_DIR}/.env'
         env_file_encoding = 'utf-8'
 
 
 class Crypt(BaseSettings):
-    token_name: str = 'X-Bearer_token'
+    token_name: list[str] = ['ac_token', 'rc_roken']  # имя токена доступа и токена refresh
     secret_key: str = 'secret_key'
     algorithm: str = 'HS256'
-    access_token_expire_minutes: int = 30  # минуты
-    cookie_max_age: int = 1800  # секунды
+    token_live: list[int] = [30, 4000]  # минуты
+    cookie_live: list[int] = [3600, 249200]  # секунды
     # Для паролей
     hashing_method: str = 'PBKDF2'
     hashing_salt_length: int = 16

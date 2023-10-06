@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Query
 from schemas.base import Page
 from schemas.roles import RoleForCreate, RoleInDB, RoleForUpdate
 from services.roles import get_roles_service, RolesService
+from services.auth import access
 
 logger = getLogger('roles_api')
 router = APIRouter()
@@ -20,10 +21,10 @@ router = APIRouter()
     tags=['Роли'],
     response_model=RoleInDB,
 )
-# @requires_admin
 async def create_role(
         role: RoleForCreate,
         roles_service: RolesService = Depends(get_roles_service),
+        auth=Depends(access(['self'])),
 ) -> RoleInDB:
     return await roles_service.create_role(name=role.name, service_name=role.service_name,
                                            description=role.description)
@@ -35,10 +36,10 @@ async def create_role(
     summary='Получить роль',
     tags=['Роли'],
 )
-# @requires_admin
 async def get_role(
         role_id: Annotated[uuid.UUID, Query(description='Идентификатор роли')],
         roles_service: RolesService = Depends(get_roles_service),
+        auth=Depends(access(['self'])),
 ) -> RoleInDB:
     return await roles_service.get_by_id(role_id=role_id)
 
@@ -52,6 +53,7 @@ async def get_role(
 )
 async def get_role(
         roles_service: RolesService = Depends(get_roles_service),
+        auth=Depends(access(['self'])),
 ) -> Page[RoleInDB]:
     return await roles_service.get_roles()
 
@@ -62,10 +64,10 @@ async def get_role(
     summary='Изменить роль',
     tags=['Роли'],
 )
-# @requires_admin
 async def create_role(
         role: RoleForUpdate,
         roles_service: RolesService = Depends(get_roles_service),
+        auth=Depends(access(['self'])),
 ) -> str:
     return await roles_service.update_role(role_id=role.id, name=role.name, service_name=role.service_name,
                                            description=role.description)
@@ -77,9 +79,9 @@ async def create_role(
     summary='Удалить роль',
     tags=['Роли'],
 )
-# @requires_admin
 async def delete_role(
         role_id: Annotated[uuid.UUID, Query(description='Идентификатор роли')],
         roles_service: RolesService = Depends(get_roles_service),
+        auth=Depends(access(['self'])),
 ) -> None:
     await roles_service.delete_role(role_id=role_id)
