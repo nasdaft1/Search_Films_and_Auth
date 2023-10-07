@@ -1,15 +1,12 @@
 import asyncio
-from http import HTTPStatus
-from uuid import UUID
-import pytest
-from main import app
-from fastapi import HTTPException
 
-from tests.functional.fixtures.client import AsyncClient
-from services.token import create_token, read_token
-from core.config import security_config
-from models.base import Token
+import pytest
+from fastapi import HTTPException
 from httpx import AsyncClient as AsynClient
+
+from main import app
+from models.base import Token
+from services.token import create_token, read_token
 
 base_url = 'http://127.0.0.1:8000/api/v1'
 
@@ -43,14 +40,11 @@ async def test_token_login():
         ac.cookies.set(name='XX', value=token)
 
 
-
 async def test_token_logout():
     data = Token(user_id='', roles=['admin', 'root'])
     async with AsynClient(app=app, base_url=f'{base_url}') as ac:
         token = create_token(data, 2)
         ac.cookies.set(name='XX', value=token)
-
-
 
 #
 # @pytest.mark.parametrize("method, url, params, status_code, result", [

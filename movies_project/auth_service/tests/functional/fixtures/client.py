@@ -5,7 +5,7 @@ import aiohttp
 import pytest_asyncio
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ContentTypeError
-from tests.db import engine, async_session
+from db.postgres import engine, async_session
 from models.db import Base, User, Role
 from core.config import security_config
 from werkzeug.security import generate_password_hash
