@@ -13,9 +13,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from schemas.base import Page
 from schemas.users import UserForCreate, HistoryForCreate, UserForUpdate
-from src.core.config import security_config
+from core.config import security_config
 from db.postgres import get_session
-from src.models.db import User, Role, History
+from models.db import User, Role, History
 from .base import BaseService
 
 logger = getLogger('users_service')
@@ -59,10 +59,17 @@ class UsersService(BaseService):
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Пользователь не найден.')
         return user
 
-    async def get_by_username(self, username) -> User:
+    async def get_by_username(self, username: str) -> User:
         logger.info(f'get_by_username({username=})')
         result = await self.session.execute(
-            select(User).where(User.username == username).options(selectinload(User.roles))
+            select(User).where(User.username == username)
+        )
+        return result.scalars().one_or_none()
+
+    async def get_by_email(self, email: str) -> User:
+        logger.info(f'get_by_email({email=})')
+        result = await self.session.execute(
+            select(User).where(User.email == email)
         )
         return result.scalars().one_or_none()
 

@@ -67,7 +67,7 @@ async def check_token(config: Crypt, token_type: bool,
             # проверить есть ли доступ к странице в соответствии с ролью
 
 
-def access(role=list[str]):
+def access(roles=list[str]):
     """Проверка токенов и роли доступа """
 
     async def token(request: Request, response: Response):
@@ -75,10 +75,12 @@ def access(role=list[str]):
                                       token_type=False,
                                       request=request,
                                       response=response)
-        if user_data is not None:
-            if security_config.admin_role_name in user_data.roles \
-                    or set(user_data.roles) & set(role):
-                return user_data
-        raise HTTPException(status_code=401, detail="У вас недостаточные права для ресурса")
+        if security_config.admin_role_name in user_data.roles:
+            return user_data
+        if 'self' in roles and request.get('user_id') and request.get('user_id') != user_data.user_id:
+            raise HTTPException(status_code=401, detail='У вас недостаточные права для ресурса')
+        if set(user_data.roles) & set(roles):
+            return user_data
+        raise HTTPException(status_code=401, detail='У вас недостаточные права для ресурса')
 
     return token

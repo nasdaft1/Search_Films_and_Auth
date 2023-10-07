@@ -4,8 +4,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from src.core.config import config as service_config
-from src.models.db import Base
+from core.config import config as service_config
+from models.db import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -5,7 +5,7 @@ from sqlalchemy import Boolean, Column, String, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base, relationship
 
-from src.core.config import config
+from core.config import config
 
 Base = declarative_base()
 
@@ -68,6 +68,6 @@ class Role(AuthSchema):
 class History(AuthSchema):
     __tablename__ = "history"
     id = Column(UUID(as_uuid=True), primary_key=True, default=generator)
-    user_id = Column(UUID(as_uuid=True), ForeignKey('auth.user.id'))
+    user_id = Column(UUID(as_uuid=True), ForeignKey('auth.user.id', ondelete='CASCADE'))
     message = Column(String(50))
     created_at = Column(DateTime, default=datetime.utcnow)

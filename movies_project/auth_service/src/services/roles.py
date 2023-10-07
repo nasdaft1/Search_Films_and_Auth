@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas.base import Page
 from db.postgres import get_session
-from src.models.db import Role
+from models.db import Role
 from .base import BaseService
 
 logger = getLogger('roles_service')
@@ -39,7 +39,7 @@ class RolesService(BaseService):
 
     async def get_by_name(self, name: str) -> Role:
         logger.info(f'get_by_name({name=})')
-        result = await self.session.execute(select(Role).where(Role.name == name))
+        result = await self.session.execute(select(Role).where(Role.service_name == name))
         found = result.scalars().first()
         return found
 
