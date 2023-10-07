@@ -27,3 +27,4 @@ fastapi-cache2[redis] == 0.2.1
 asyncio == 3.4.3
 fastapi-pagination==0.12.10
 Werkzeug==3.0.0
+aiohttp~=3.8.5

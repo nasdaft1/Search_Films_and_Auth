@@ -3,6 +3,7 @@ from typing import Any
 from fastapi import HTTPException, Request, Response
 
 from core.config import Crypt, security_config
+from db import redis
 from db.redis import con_redis
 from models.base import Token
 from services.token import create_token
@@ -39,9 +40,9 @@ async def check_token(config: Crypt, token_type: bool,
         if error_status != 401 and token_type:
             raise HTTPException(status_code=403, detail="В доступе отказано авторизуйтесь")
     # Проверяем access token что не в black_list
-    if token is None:
+    if token is None or data is None:
         raise HTTPException(status_code=403, detail="В доступе отказано авторизуйтесь")
-    black_list = con_redis.get(token)
+    black_list = redis.get_value(token)
 
     match black_list, token_type, error_status:
         case True, _, _:
@@ -74,9 +75,10 @@ def access(role=list[str]):
                                       token_type=False,
                                       request=request,
                                       response=response)
-        if security_config.admin_role_name in user_data.roles \
-                or set(user_data.roles) & set(role):
-            return user_data
+        if user_data is not None:
+            if security_config.admin_role_name in user_data.roles \
+                    or set(user_data.roles) & set(role):
+                return user_data
         raise HTTPException(status_code=401, detail="У вас недостаточные права для ресурса")
 
     return token

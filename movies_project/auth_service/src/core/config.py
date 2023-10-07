@@ -36,7 +36,7 @@ class AppConfig(BaseSettings, BaseModel):
 
 
 class Crypt(BaseSettings):
-    admin_role_name = 'superadmin'
+    admin_role_name: str = 'superadmin'
     token_name: list[str] = ['ac_token', 'rc_roken']  # имя токена доступа и токена refresh
     secret_key: str = 'secret_key'
     algorithm: str = 'HS256'

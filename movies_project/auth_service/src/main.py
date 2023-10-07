@@ -14,15 +14,16 @@ from redis import asyncio as aioredis
 from api.v1 import users, roles, auth
 from core import logger
 from core.config import config
+from db import redis
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    con_redis = aioredis.from_url(f'redis://{config.redis_host}:{config.redis_port}')
-    FastAPICache.init(RedisBackend(con_redis), prefix="fastapi-cache", expire=config.cache_expire_time)
+    redis.con_redis = aioredis.from_url(f'redis://{config.redis_host}:{config.redis_port}')
+    FastAPICache.init(RedisBackend(redis.con_redis), prefix="fastapi-cache", expire=config.cache_expire_time)
     yield
     # Отключаемся от баз при выключении сервера
-    await con_redis.close()
+    await redis.con_redis.close()
 
 
 # Применяем настройки логирования
