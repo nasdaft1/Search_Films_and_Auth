@@ -1,5 +1,4 @@
 import uuid
-from functools import lru_cache
 from http import HTTPStatus
 from logging import getLogger
 
@@ -9,9 +8,9 @@ from sqlalchemy import select, delete, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas.base import Page
 from db.postgres import get_session
 from models.db import Role
+from schemas.base import Page
 from .base import BaseService
 
 logger = getLogger('roles_service')

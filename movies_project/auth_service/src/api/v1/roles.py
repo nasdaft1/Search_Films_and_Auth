@@ -51,7 +51,7 @@ async def get_role(
     tags=['Роли'],
     response_model=Page[RoleInDB],
 )
-async def get_role(
+async def get_roles(
         roles_service: RolesService = Depends(get_roles_service),
         auth=Depends(access(['self'])),
 ) -> Page[RoleInDB]:
@@ -64,7 +64,7 @@ async def get_role(
     summary='Изменить роль',
     tags=['Роли'],
 )
-async def create_role(
+async def update_role(
         role: RoleForUpdate,
         roles_service: RolesService = Depends(get_roles_service),
         auth=Depends(access(['self'])),

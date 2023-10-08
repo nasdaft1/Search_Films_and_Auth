@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -54,8 +55,6 @@ class AsyncClient:
         async with self.session.request(method=method, url=url, json=data,
                                         params=params, allow_redirects=True) as response:
 
-
-#            print(f'{url=}')
             try:
                 result = await response.json()
 
@@ -106,7 +105,7 @@ async def prepare_database():
         )  # создание роли superadmin
         session.add(role)
 
-        user_role = user_admin.roles.append(role)
+        user_admin.roles.append(role)
 
         role = Role(
             id=UUID('11ad5288-e5b2-4979-afbd-e4a121720ddb'),
@@ -118,6 +117,6 @@ async def prepare_database():
         await session.commit()
 
     yield
-    # async with engine.begin() as conn:
-    #     await conn.run_sync(Base.metadata.drop_all)
-    # logging.info(f'Удаление бд с  ')
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    logging.info('Удаление бд ')

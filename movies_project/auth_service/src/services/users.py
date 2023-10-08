@@ -1,5 +1,4 @@
 import uuid
-from functools import lru_cache
 from http import HTTPStatus
 from logging import getLogger
 
@@ -11,11 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from schemas.base import Page
-from schemas.users import UserForCreate, HistoryForCreate, UserForUpdate
 from core.config import security_config
 from db.postgres import get_session
 from models.db import User, Role, History
+from schemas.base import Page
+from schemas.users import UserForCreate, HistoryForCreate, UserForUpdate
 from .base import BaseService
 
 logger = getLogger('users_service')

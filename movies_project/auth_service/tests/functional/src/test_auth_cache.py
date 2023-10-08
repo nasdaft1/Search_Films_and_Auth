@@ -10,9 +10,9 @@ from tests.functional.fixtures.client import AsyncClient
 base_url = 'http://127.0.0.1:8000/api/v1'
 
 
-@pytest.mark.parametrize("method, url, params, status_code", [
+@pytest.mark.parametrize('method, url, params, status_code', [
     ('post', '/auth/login',
-     {"username": "XXXXXX", "password": "87654321_Af/"},
+     {'username': 'XXXXXX', 'password': '87654321_Af/'},
      HTTPStatus.OK),  # Создать пользователя
 ])
 async def test_login(method, url, params, status_code, async_client: AsyncClient):
@@ -20,16 +20,18 @@ async def test_login(method, url, params, status_code, async_client: AsyncClient
     response = await async_client.request(method=method, path=url, params=params)
 
     assert response.status_code == status_code
-    assert response.json() == {'roles': ['admin_x', 'admin'], 'username': 'XXXXXX'}
+    assert response.json() == {'roles': ['admin_x', 'admin'],
+                               'user_id': '11111111-1111-1111-1111-111111111111',
+                               'username': 'XXXXXX'}
     # проверка создание токенов
     assert response.cookies.get(security_config.token_name[0]) is not None
     assert response.cookies.get(security_config.token_name[1]) is not None
 
 
-@pytest.mark.parametrize("method, url, params, status_code, detail", [
-    ('post', '/auth/login', {"username": "XXXXXX", "password": "187654321_Af/"},
+@pytest.mark.parametrize('method, url, params, status_code, detail', [
+    ('post', '/auth/login', {'username': 'XXXXXX', 'password': '187654321_Af/'},
      HTTPStatus.FORBIDDEN, {'detail': 'В доступе отказано неверный пароль'}),  # неверный логин
-    ('post', '/auth/login', {"username": "1XXXXXX", "password": "87654321_Af/"},
+    ('post', '/auth/login', {'username': '1XXXXXX', 'password': '87654321_Af/'},
      HTTPStatus.FORBIDDEN, {'detail': 'В доступе отказано неверный логин'}),  # неверный пароль
 ])
 async def test_login_error(method, url, params, status_code, detail, async_client: AsyncClient):
@@ -47,7 +49,7 @@ async def test_logout(redis_client: Redis):
     """Проверка авторизации и создание cookies c token"""
     async with httpx.AsyncClient() as session:
         response = await session.post(f'{base_url}/auth/login',
-                                      json={"username": "XXXXXX", "password": "87654321_Af/"}
+                                      json={'username': 'XXXXXX', 'password': '87654321_Af/'}
                                       )
 
         assert response.status_code == HTTPStatus.OK
@@ -68,9 +70,9 @@ async def test_logout(redis_client: Redis):
 
         response1 = await session.post(f'{base_url}/auth/logout')
 
-        assert response.status_code == HTTPStatus.OK
-        token_access = response.cookies.get(security_config.token_name[0])
-        token_refresh = response.cookies.get(security_config.token_name[1])
+        assert response1.status_code == HTTPStatus.OK
+        token_access = session.cookies.get(security_config.token_name[0])
+        token_refresh = session.cookies.get(security_config.token_name[1])
 
         assert token_access is not None
         assert token_refresh is not None

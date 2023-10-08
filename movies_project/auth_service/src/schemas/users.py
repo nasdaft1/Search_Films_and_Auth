@@ -72,9 +72,6 @@ class UserInDB(BaseModel):
     created_at: datetime
     is_deleted: bool
 
-    # roles: list[RoleInDB] = Field(default_factory=list)
-    # history: list[UserHistory] = Field(default_factory=list)
-
     class Config:
         from_attributes = True
 

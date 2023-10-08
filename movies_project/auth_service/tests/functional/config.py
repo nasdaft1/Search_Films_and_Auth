@@ -23,4 +23,3 @@ class AppConfig(BaseSettings):
 
 
 config = AppConfig()
-

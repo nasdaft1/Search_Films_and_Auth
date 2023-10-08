@@ -45,18 +45,3 @@ async def test_token_logout():
     async with AsynClient(app=app, base_url=f'{base_url}') as ac:
         token = create_token(data, 2)
         ac.cookies.set(name='XX', value=token)
-
-#
-# @pytest.mark.parametrize("method, url, params, status_code, result", [
-#     ('get', '/auth/login', {}, HTTPStatus.OK, ['items', 3]),  # авторизация
-#     # ('get', '/auth/logout', {'page': 1, 'size': 50}, 200, ['items', 1]),  # Список ролей
-# ])
-# async def test_query_list(method, url, params, status_code, result, async_client: AsyncClient):
-#     """Проверка количество данных в списке"""
-#     response = await async_client.request(method=method, path=url, params=params)
-#     print(response)
-#     json = response.json()
-#     print(response.status_code)
-#     # logging.info(f'Тестируем запрос параметры -> результат {query}')
-#     assert response.status_code == status_code
-#     assert len(json.get(result[0], None)) == result[1]

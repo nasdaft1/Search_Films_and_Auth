@@ -2,7 +2,7 @@ import os
 from typing import Literal
 
 from dotenv import load_dotenv
-from pydantic import conint, BaseModel, Field
+from pydantic import conint, BaseModel
 from pydantic_settings import BaseSettings
 
 load_dotenv()

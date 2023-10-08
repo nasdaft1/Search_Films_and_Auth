@@ -1,9 +1,14 @@
 import asyncio
 
+import pytest_asyncio
 from pytest import FixtureRequest
 from redis.asyncio import Redis
 
-from .fixtures.client import *
+from tests.functional.fixtures.client import (config,
+                                              AsyncClient,
+                                              async_client,
+                                              prepare_database,
+                                              client_session)
 
 
 @pytest_asyncio.fixture(scope='session')

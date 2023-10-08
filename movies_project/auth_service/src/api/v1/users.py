@@ -76,8 +76,7 @@ async def get_users(
     tags=['Пользователи'],
     response_model=str,
 )
-
-async def create_role(
+async def update_user(
         user: UserForUpdate,
         users_service: UsersService = Depends(get_users_service),
         auth=Depends(access(['self'])),
