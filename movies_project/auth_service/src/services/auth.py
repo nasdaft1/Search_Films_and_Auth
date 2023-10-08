@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from fastapi import HTTPException, Request, Response
@@ -18,6 +19,16 @@ def create_cookies(token: Any, cookie_name, cookie_live, response: Response):
                         max_age=cookie_live)
 
 
+def create_all_cookies(config: Crypt, data: Token, response: Response):
+    for index in range(2):
+        create_cookies(
+            token=create_token(data=data, time_live=config.token_live[index]),
+            cookie_name=config.token_name[index],
+            cookie_live=config.cookie_live[index],
+            response=response)
+    return data
+
+
 async def check_token(config: Crypt, token_type: bool,
                       request: Request, response: Response) -> Token:
     """
@@ -34,7 +45,8 @@ async def check_token(config: Crypt, token_type: bool,
     data = Token()
     try:
         token = request.cookies.get(cookies_name)
-        data = read_token(token)
+        data = await read_token(token)
+        logging.debug(f'111111111111-{data}')
     except HTTPException as error:
         error_status = error.status_code
         if error_status != 401 and token_type:
@@ -42,7 +54,7 @@ async def check_token(config: Crypt, token_type: bool,
     # Проверяем access token что не в black_list
     if token is None or data is None:
         raise HTTPException(status_code=403, detail="В доступе отказано авторизуйтесь")
-    black_list = redis.get_value(token)
+    black_list = await redis.get_value(token)
 
     match black_list, token_type, error_status:
         case True, _, _:
@@ -57,13 +69,15 @@ async def check_token(config: Crypt, token_type: bool,
             return data
         case None, True, _:
             # refresh не в black_list пересоздать токен access и refresh
-            for index in range(2):
-                create_cookies(
-                    token=create_token(data=data, time_live=config.token_live[index]),
-                    cookie_name=config.token_name[index],
-                    cookie_live=config.cookie_live[index],
-                    response=response)
-            return data
+            create_all_cookies(config=config, data=data, response=response)
+
+            # for index in range(2):
+            #     create_cookies(
+            #         token=create_token(data=data, time_live=config.token_live[index]),
+            #         cookie_name=config.token_name[index],
+            #         cookie_live=config.cookie_live[index],
+            #         response=response)
+            # return data
             # проверить есть ли доступ к странице в соответствии с ролью
 
 
@@ -75,6 +89,7 @@ def access(roles=list[str]):
                                       token_type=False,
                                       request=request,
                                       response=response)
+        logging.debug(f'222222222222-{user_data} {roles}')
         if security_config.admin_role_name in user_data.roles:
             return user_data
         if 'self' in roles and request.get('user_id') and request.get('user_id') != user_data.user_id:

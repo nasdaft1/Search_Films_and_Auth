@@ -9,16 +9,16 @@ from werkzeug.security import generate_password_hash
 
 from core.config import security_config
 from db.postgres import engine, async_session
-from models.base import Token
 from models.db import Base, User, Role
-from services.token import create_token
 from ..config import config
 
 
 @pytest_asyncio.fixture(scope='session')
 async def client_session() -> aiohttp.ClientSession:
     """Создадим экземпляр сессии aiohttp, для всей сессии."""
-    async with aiohttp.ClientSession() as session:
+    jar = aiohttp.CookieJar(unsafe=True)
+    # для изменения политики безопасности
+    async with aiohttp.ClientSession(cookie_jar=jar) as session:
         yield session
 
 
@@ -26,6 +26,7 @@ async def client_session() -> aiohttp.ClientSession:
 class Response:
     status_code: int
     _json: dict
+    cookies: dict
 
     def json(self) -> dict:
         return self._json
@@ -40,29 +41,28 @@ class AsyncClient:
     async def get(self, path: str, params: dict | None = None) -> Response:
         return await self.request('get', path=path, params=params)
 
-    async def request(self, method: str, path: str, role: list | None,
+    async def request(self, method: str, path: str,
                       params: dict | None = None, ) -> Response:
+
         url = self.base_url + '/' + path.lstrip('/')
         data = None
         if method in ['post', 'put']:
             print('POST or PUT')
             data = params
             params = None
-
-        if role is not None:  # создание токена если есть введена роль
-            token = create_token(Token(roles=role), 20)
-            cookies = {security_config.token_name[0]: token}
-            self.session.cookie_jar.update_cookies(cookies)
-
+        print(self.session.cookie_jar.filter_cookies(self.base_url))
         async with self.session.request(method=method, url=url, json=data,
                                         params=params, allow_redirects=True) as response:
 
-            print(f'{url=}')
+
+#            print(f'{url=}')
             try:
                 result = await response.json()
+
             except (ContentTypeError, Exception):
-                return Response(_json={}, status_code=response.status)
-            return Response(_json=result, status_code=response.status)
+
+                return Response(_json={}, status_code=response.status, cookies=response.cookies)
+            return Response(_json=result, status_code=response.status, cookies=response.cookies)
 
 
 @pytest_asyncio.fixture
@@ -79,7 +79,7 @@ async def prepare_database():
     async with async_session() as session:
         user_admin = User(
             id=UUID('11111111-1111-1111-1111-111111111111'),
-            username='XXX',
+            username='XXXXXX',
             password_hash=generate_password_hash(
                 '87654321_Af/',
                 method=security_config.hashing_method.lower(),

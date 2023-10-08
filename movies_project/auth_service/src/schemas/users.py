@@ -76,7 +76,6 @@ class UserInDB(BaseModel):
     # history: list[UserHistory] = Field(default_factory=list)
 
     class Config:
-        orm_mode = True
         from_attributes = True
 
     def __repr__(self) -> str:
@@ -88,7 +87,6 @@ class UserRoleInDB(BaseModel):
     role_id: uuid.UUID
 
     class Config:
-        orm_mode = True
         from_attributes = True
 
     def __repr__(self) -> str:
@@ -108,7 +106,6 @@ class HistoryInDB(HistoryForCreate):
     created_at: datetime
 
     class Config:
-        orm_mode = True
         from_attributes = True
 
     def __repr__(self) -> str:
